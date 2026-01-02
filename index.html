@@ -3,298 +3,238 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CampusConnect.AI | Dashboard</title>
+    <title>CampusConnect.AI | Unified Campus Intelligence</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
-        .sidebar-item.active { background: #eff6ff; color: #2563eb; border-right: 4px solid #2563eb; }
-        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(226, 232, 240, 0.8); }
-        .loader { border-top-color: #3b82f6; animation: spinner 1.5s linear infinite; }
-        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 0.8); }
+        .gradient-text { background: linear-gradient(90deg, #4f46e5, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
 </head>
-<body class="flex h-screen overflow-hidden">
+<body>
+    <div id="root"></div>
 
-    <!-- SIDEBAR -->
-    <aside class="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col">
-        <div class="p-6 flex items-center gap-3">
-            <div class="bg-blue-600 p-2 rounded-lg text-white">
-                <i data-lucide="layout-grid" class="w-6 h-6"></i>
-            </div>
-            <span class="text-xl font-bold text-gray-800 tracking-tight">CampusConnect</span>
-        </div>
-        
-        <nav class="flex-1 px-4 space-y-2 mt-4">
-            <button onclick="showSection('feed')" class="sidebar-item active w-full flex items-center gap-3 px-4 py-3 rounded-xl transition font-medium text-gray-600 hover:bg-gray-50">
-                <i data-lucide="home" class="w-5 h-5"></i> Dashboard
-            </button>
-            <button onclick="showSection('clubs')" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition font-medium text-gray-600 hover:bg-gray-50">
-                <i data-lucide="shield-check" class="w-5 h-5"></i> Verified Clubs
-            </button>
-            <button onclick="showSection('ai-scanner')" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition font-medium text-gray-600 hover:bg-gray-50">
-                <i data-lucide="scan-eye" class="w-5 h-5"></i> AI Poster Lab
-            </button>
-            <button onclick="showSection('attendance')" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition font-medium text-gray-600 hover:bg-gray-50">
-                <i data-lucide="calendar-check-2" class="w-5 h-5"></i> Attendance
-            </button>
-            <button onclick="showSection('analytics')" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition font-medium text-gray-600 hover:bg-gray-50">
-                <i data-lucide="bar-chart-big" class="w-5 h-5"></i> Analytics
-            </button>
-        </nav>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-        <div class="p-4 border-t">
-            <div class="bg-blue-50 p-4 rounded-xl">
-                <p class="text-xs font-bold text-blue-600 uppercase mb-1">Student Profile</p>
-                <p class="text-sm font-semibold text-gray-800">Aryan Sharma</p>
-                <p class="text-xs text-gray-500">B.Tech CSE - Yr 3</p>
-            </div>
-        </div>
-    </aside>
+        // --- Mock Data ---
+        const MOCK_EVENTS = [
+            { id: 1, title: "National Level Hackathon 2024", club: "Coding Club", date: "Oct 15", time: "09:00 AM", location: "Main Audi", category: "Tech", verified: true, image: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&q=80&w=400" },
+            { id: 2, title: "Cultural Night & Fusion", club: "Arts Society", date: "Oct 18", time: "06:00 PM", location: "Open Theater", category: "Cultural", verified: true, image: "https://images.unsplash.com/photo-1514525253361-bee8a197c9c0?auto=format&fit=crop&q=80&w=400" },
+            { id: 3, title: "Guest Lecture: AI Ethics", club: "CS Dept", date: "Oct 20", time: "11:00 AM", location: "Seminar Hall 2", category: "Academic", verified: true, image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&q=80&w=400" },
+        ];
 
-    <!-- MAIN CONTENT -->
-    <main class="flex-1 flex flex-col overflow-hidden">
-        <!-- TOP NAV -->
-        <header class="h-16 bg-white border-b flex items-center justify-between px-8">
-            <div class="relative w-96">
-                <i data-lucide="search" class="absolute left-3 top-2.5 text-gray-400 w-4 h-4"></i>
-                <input type="text" placeholder="Ask AI: 'When is the next hackathon?'" class="w-full pl-10 pr-4 py-2 bg-gray-100 border-none rounded-full text-sm focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div class="flex items-center gap-4">
-                <button class="relative p-2 text-gray-500 hover:bg-gray-100 rounded-full">
-                    <i data-lucide="bell" class="w-5 h-5"></i>
-                    <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-                </button>
-                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold text-xs">AS</div>
-            </div>
-        </header>
+        // --- Components ---
 
-        <!-- DYNAMIC CONTENT AREA -->
-        <div id="content-area" class="flex-1 overflow-y-auto p-8">
-            
-            <!-- SECTION: FEED -->
-            <section id="feed-section" class="space-y-8">
-                <div class="flex justify-between items-end">
+        const SidebarItem = ({ icon, label, active, onClick }) => (
+            <div 
+                onClick={onClick}
+                className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-all ${active ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-600 hover:bg-indigo-50'}`}
+            >
+                <i className={`fas ${icon} w-5`}></i>
+                <span className="font-medium">{label}</span>
+            </div>
+        );
+
+        const AttendanceWidget = () => (
+            <div className="glass-card p-5 rounded-2xl shadow-sm mb-6">
+                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Attendance Health</h3>
+                <div className="flex items-end justify-between">
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-800">Personalized Feed</h1>
-                        <p class="text-gray-500">Based on your interests in <b>AI, Web3, and Robotics</b></p>
+                        <span className="text-3xl font-bold text-slate-800">78%</span>
+                        <p className="text-xs text-green-600 font-semibold mt-1"><i className="fas fa-caret-up"></i> Above Threshold</p>
                     </div>
-                    <div class="flex gap-2">
-                        <span class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-xs font-semibold">CSE Department</span>
-                        <span class="px-3 py-1 bg-purple-100 text-purple-600 rounded-full text-xs font-semibold">Verified Only</span>
+                    <div className="text-right">
+                        <p className="text-xs text-slate-500">Next Lecture</p>
+                        <p className="text-sm font-semibold">Data Structures</p>
+                        <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold">CRITICAL</span>
                     </div>
                 </div>
+                <div className="w-full bg-slate-100 h-2 rounded-full mt-4">
+                    <div className="bg-indigo-600 h-2 rounded-full" style={{width: '78%'}}></div>
+                </div>
+            </div>
+        );
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Event Card 1 -->
-                    <div class="glass-card rounded-2xl overflow-hidden hover:shadow-xl transition group">
-                        <div class="h-40 bg-indigo-600 relative overflow-hidden">
-                            <div class="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-                            <div class="absolute top-4 left-4 bg-white/20 backdrop-blur-md px-3 py-1 rounded text-white text-xs font-bold italic">Verified: Google Developer Student Club</div>
-                        </div>
-                        <div class="p-5">
-                            <h3 class="font-bold text-lg mb-1 group-hover:text-blue-600 transition">Google Gemini Workshop</h3>
-                            <p class="text-sm text-gray-500 mb-4 line-clamp-2">Learn to integrate multimodal LLMs into your web applications using Gemini Vision Pro.</p>
-                            <div class="flex items-center gap-4 text-xs text-gray-600 font-medium">
-                                <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i> Oct 24</span>
-                                <span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i> Seminar Hall B</span>
+        const EventCard = ({ event }) => (
+            <div className="glass-card rounded-2xl overflow-hidden hover:shadow-lg transition-shadow group">
+                <div className="relative h-40">
+                    <img src={event.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold text-indigo-600">
+                        {event.category}
+                    </div>
+                </div>
+                <div className="p-4">
+                    <div className="flex items-center space-x-1 mb-1">
+                        <span className="text-[11px] font-bold text-slate-500 uppercase">{event.club}</span>
+                        {event.verified && <i className="fas fa-check-circle text-blue-500 text-[10px]"></i>}
+                    </div>
+                    <h4 className="font-bold text-slate-800 leading-tight mb-3">{event.title}</h4>
+                    <div className="flex items-center justify-between text-xs text-slate-500 mb-4">
+                        <div className="flex items-center"><i className="far fa-calendar-alt mr-1"></i> {event.date}</div>
+                        <div className="flex items-center"><i className="far fa-clock mr-1"></i> {event.time}</div>
+                    </div>
+                    <button className="w-full py-2 bg-indigo-50 text-indigo-600 rounded-xl text-sm font-bold hover:bg-indigo-600 hover:text-white transition-colors">
+                        Add to Calendar
+                    </button>
+                </div>
+            </div>
+        );
+
+        // --- Main App ---
+        const App = () => {
+            const [view, setView] = useState('dashboard');
+            const [searchQuery, setSearchQuery] = useState('');
+            const [isScanning, setIsScanning] = useState(false);
+
+            const handlePosterUpload = () => {
+                setIsScanning(true);
+                setTimeout(() => setIsScanning(false), 3000); // Simulate Gemini Vision processing
+            };
+
+            return (
+                <div className="flex min-h-screen bg-slate-50">
+                    {/* Sidebar */}
+                    <aside className="w-64 bg-white border-r border-slate-200 p-6 flex flex-col hidden md:flex">
+                        <div className="flex items-center space-x-2 mb-10">
+                            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+                                <i className="fas fa-bolt text-white"></i>
                             </div>
-                            <button onclick="syncToCalendar(this)" class="mt-4 w-full py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition font-semibold flex items-center justify-center gap-2">
-                                <i data-lucide="calendar-plus" class="w-4 h-4"></i> Sync to G-Cal
-                            </button>
+                            <h1 className="text-xl font-bold text-slate-800">CampusConnect<span className="text-indigo-600">.AI</span></h1>
                         </div>
-                    </div>
-                    <!-- Event Card 2 -->
-                    <div class="glass-card rounded-2xl overflow-hidden hover:shadow-xl transition group">
-                        <div class="h-40 bg-emerald-600 relative overflow-hidden">
-                            <div class="absolute top-4 left-4 bg-white/20 backdrop-blur-md px-3 py-1 rounded text-white text-xs font-bold italic">Verified: Placement Cell</div>
-                        </div>
-                        <div class="p-5">
-                            <h3 class="font-bold text-lg mb-1 group-hover:text-blue-600 transition">Mock Interviews 2024</h3>
-                            <p class="text-sm text-gray-500 mb-4 line-clamp-2">Compulsory session for all Year 3 students. Get real-time feedback from alumni.</p>
-                            <div class="flex items-center gap-4 text-xs text-gray-600 font-medium">
-                                <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i> Oct 28</span>
-                                <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> 10:00 AM</span>
-                            </div>
-                            <div class="mt-4 p-2 bg-amber-50 rounded-lg border border-amber-100 flex items-center gap-2 text-amber-700 text-[10px] font-bold">
-                                <i data-lucide="info" class="w-3 h-3"></i> ATTENDANCE COMPENSATION PROVIDED
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+                        
+                        <nav className="space-y-2 flex-1">
+                            <SidebarItem icon="fa-th-large" label="Dashboard" active={view === 'dashboard'} onClick={() => setView('dashboard')} />
+                            <SidebarItem icon="fa-calendar-check" label="Events" active={view === 'events'} onClick={() => setView('events')} />
+                            <SidebarItem icon="fa-users" label="Verified Clubs" />
+                            <SidebarItem icon="fa-chart-pie" label="Attendance" />
+                            <SidebarItem icon="fa-cog" label="Settings" />
+                        </nav>
 
-            <!-- SECTION: AI SCANNER (FUNCTIONAL SIMULATION) -->
-            <section id="ai-scanner-section" class="hidden max-w-4xl mx-auto">
-                <div class="text-center mb-10">
-                    <h1 class="text-3xl font-bold">Gemini Vision Event Parser</h1>
-                    <p class="text-gray-500">Upload a poster and our AI will structure the event data instantly.</p>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="border-2 border-dashed border-gray-300 rounded-3xl p-12 flex flex-col items-center justify-center bg-white hover:border-blue-500 transition cursor-pointer" onclick="simulateUpload()">
-                        <div id="upload-idle">
-                            <i data-lucide="image-plus" class="w-12 h-12 text-gray-400 mb-4 mx-auto"></i>
-                            <p class="font-semibold text-gray-600">Drop poster here or click to upload</p>
-                            <p class="text-xs text-gray-400 mt-2">Supports JPG, PNG, PDF</p>
+                        <div className="mt-auto glass-card p-4 rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50">
+                            <p className="text-xs font-bold text-indigo-600 mb-1">PRO TIP</p>
+                            <p className="text-[11px] text-slate-600">Ask Gemini: "Show me all hackathons next week"</p>
                         </div>
-                        <div id="upload-loading" class="hidden text-center">
-                            <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4 mx-auto"></div>
-                            <p class="text-blue-600 font-bold animate-pulse">Gemini is analyzing pixels...</p>
-                        </div>
-                    </div>
+                    </aside>
 
-                    <div id="ai-result" class="bg-gray-900 rounded-3xl p-6 text-green-400 font-mono text-sm shadow-2xl min-h-[300px] flex items-center justify-center">
-                        <span class="text-gray-500 italic">// Awaiting input...</span>
-                    </div>
-                </div>
-            </section>
-
-            <!-- SECTION: ATTENDANCE -->
-            <section id="attendance-section" class="hidden">
-                <h1 class="text-2xl font-bold mb-6">Smart Attendance Predictor</h1>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-white p-6 rounded-2xl border">
-                        <h3 class="text-gray-500 text-sm font-semibold mb-4">Overall Attendance</h3>
-                        <div class="relative flex items-center justify-center">
-                            <svg class="w-32 h-32">
-                                <circle cx="64" cy="64" r="58" stroke="#f1f5f9" stroke-width="12" fill="none" />
-                                <circle cx="64" cy="64" r="58" stroke="#ef4444" stroke-width="12" fill="none" stroke-dasharray="364" stroke-dashoffset="80" stroke-linecap="round" />
-                            </svg>
-                            <span class="absolute text-2xl font-bold">72%</span>
-                        </div>
-                        <div class="mt-4 p-3 bg-red-50 text-red-700 rounded-xl text-xs flex items-center gap-2">
-                            <i data-lucide="alert-triangle" class="w-4 h-4"></i> High Risk: Don't miss the next 3 lectures.
-                        </div>
-                    </div>
-                    <div class="md:col-span-2 bg-white p-6 rounded-2xl border">
-                        <h3 class="text-gray-500 text-sm font-semibold mb-4">Actionable Recommendations</h3>
-                        <div class="space-y-4">
-                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                                <div>
-                                    <p class="font-bold text-sm">Automata Theory (AT201)</p>
-                                    <p class="text-xs text-gray-500">Current: 68% | Required: 75%</p>
+                    {/* Main Content */}
+                    <main className="flex-1 p-4 md:p-8 overflow-y-auto">
+                        {/* Header */}
+                        <header className="flex flex-col md:flex-row md:items-center justify-between mb-8 space-y-4 md:space-y-0">
+                            <div className="relative flex-1 max-w-2xl">
+                                <i className="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <input 
+                                    type="text" 
+                                    placeholder="Search events, clubs, or ask AI assistant..." 
+                                    className="w-full pl-12 pr-4 py-3 rounded-2xl border-none ring-1 ring-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm transition-all"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2 px-2 py-1 bg-indigo-50 text-indigo-600 rounded text-[10px] font-bold">
+                                    AI ACTIVE
                                 </div>
-                                <span class="px-3 py-1 bg-red-100 text-red-600 rounded-full text-[10px] font-bold">MUST ATTEND</span>
                             </div>
-                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                                <div>
-                                    <p class="font-bold text-sm">Smart India Hackathon 2024</p>
-                                    <p class="text-xs text-gray-500">Approved for OD (Other Duty)</p>
+                            <div className="flex items-center space-x-4 self-end">
+                                <button 
+                                    onClick={handlePosterUpload}
+                                    className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200"
+                                >
+                                    <i className="fas fa-plus"></i>
+                                    <span>{isScanning ? 'Processing Poster...' : 'Post Event'}</span>
+                                </button>
+                                <div className="w-10 h-10 rounded-full bg-slate-200 border-2 border-white shadow-sm overflow-hidden">
+                                    <img src="https://ui-avatars.com/api/?name=Student+User" />
                                 </div>
-                                <span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-[10px] font-bold">+5% ATTENDANCE CREDIT</span>
+                            </div>
+                        </header>
+
+                        {/* Dashboard Grid */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            {/* Left Col: Feed */}
+                            <div className="lg:col-span-2">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-xl font-bold text-slate-800">Personalized Feed</h2>
+                                    <div className="flex space-x-2">
+                                        <span className="px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-semibold text-slate-600">All</span>
+                                        <span className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-xs font-bold">For You</span>
+                                    </div>
+                                </div>
+
+                                {isScanning ? (
+                                    <div className="glass-card p-12 rounded-3xl flex flex-col items-center justify-center space-y-4 animate-pulse">
+                                        <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center">
+                                            <i className="fas fa-wand-magic-sparkles text-indigo-600 text-2xl"></i>
+                                        </div>
+                                        <p className="font-bold text-slate-700 text-lg">Gemini Vision is extracting details...</p>
+                                        <p className="text-slate-500 text-sm">Converting poster image into structured event data</p>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {MOCK_EVENTS.map(ev => <EventCard key={ev.id} event={ev} />)}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Right Col: Widgets */}
+                            <div>
+                                <AttendanceWidget />
+                                
+                                <div className="glass-card p-6 rounded-2xl shadow-sm">
+                                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Deadlines</h3>
+                                    <div className="space-y-4">
+                                        <div className="flex items-start space-x-3 p-3 hover:bg-slate-50 rounded-xl transition-colors">
+                                            <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center text-red-600 flex-shrink-0">
+                                                <i className="fas fa-file-invoice"></i>
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-800">Lab Record Submission</p>
+                                                <p className="text-xs text-slate-500">Physics Lab • Due Today</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start space-x-3 p-3 hover:bg-slate-50 rounded-xl transition-colors">
+                                            <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600 flex-shrink-0">
+                                                <i className="fas fa-ticket-alt"></i>
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-800">Symposium Registration</p>
+                                                <p className="text-xs text-slate-500">CSE Dept • Ends in 2 days</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button className="w-full mt-6 text-xs font-bold text-indigo-600 hover:underline">View All Schedule</button>
+                                </div>
+
+                                <div className="mt-6 glass-card p-6 rounded-2xl bg-slate-900 text-white shadow-xl relative overflow-hidden">
+                                    <div className="relative z-10">
+                                        <h3 className="font-bold text-lg mb-2 text-indigo-400">Verified Club Access</h3>
+                                        <p className="text-xs text-slate-400 mb-4">You are following 12 verified campus bodies.</p>
+                                        <div className="flex -space-x-2">
+                                            {[1,2,3,4].map(i => (
+                                                <div key={i} className="w-8 h-8 rounded-full border-2 border-slate-900 bg-slate-700 flex items-center justify-center text-[10px] font-bold">
+                                                    C{i}
+                                                </div>
+                                            ))}
+                                            <div className="w-8 h-8 rounded-full border-2 border-slate-900 bg-indigo-600 flex items-center justify-center text-[10px] font-bold">
+                                                +8
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <i className="fas fa-shield-alt absolute -right-4 -bottom-4 text-7xl text-white/5"></i>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </main>
                 </div>
-            </section>
-
-        </div>
-    </main>
-
-    <!-- AI FLOATING ASSISTANT (GEMINI CHAT) -->
-    <div class="fixed bottom-8 right-8 z-50">
-        <button onclick="toggleChat()" class="bg-blue-600 text-white p-4 rounded-full shadow-2xl hover:scale-110 transition active:scale-95">
-            <i data-lucide="sparkles"></i>
-        </button>
-        <div id="ai-chat" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col">
-            <div class="bg-blue-600 p-4 text-white font-bold flex justify-between">
-                <span>Campus AI Assistant</span>
-                <i data-lucide="x" class="w-4 h-4 cursor-pointer" onclick="toggleChat()"></i>
-            </div>
-            <div id="chat-messages" class="h-64 overflow-y-auto p-4 space-y-3 text-sm">
-                <div class="bg-gray-100 p-3 rounded-tr-xl rounded-bl-xl mr-8 italic">Hi Aryan! I've scanned the campus updates. How can I help?</div>
-            </div>
-            <div class="p-3 border-t">
-                <input type="text" id="chat-input" onkeypress="handleChat(event)" placeholder="Ask about events..." class="w-full p-2 bg-gray-50 rounded-lg text-xs outline-none focus:ring-1 focus:ring-blue-500">
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // INITIALIZE ICONS
-        lucide.createIcons();
-
-        // NAVIGATION LOGIC
-        function showSection(id) {
-            // Hide all
-            document.querySelectorAll('#content-area > section').forEach(s => s.classList.add('hidden'));
-            // Remove active class from buttons
-            document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
-            
-            // Show selected
-            document.getElementById(`${id}-section`).classList.remove('hidden');
-            event.currentTarget.classList.add('active');
+            );
         }
 
-        // FUNCTIONAL: AI POSTER SCANNER SIMULATION
-        function simulateUpload() {
-            const idle = document.getElementById('upload-idle');
-            const loader = document.getElementById('upload-loading');
-            const result = document.getElementById('ai-result');
-
-            idle.classList.add('hidden');
-            loader.classList.remove('hidden');
-            result.innerHTML = `<span class="animate-pulse">Analysing OCR layers...</span>`;
-
-            setTimeout(() => {
-                loader.classList.add('hidden');
-                idle.classList.remove('hidden');
-                
-                const mockData = {
-                    event_name: "Techno-Summit 2025",
-                    organizer: "Robotics Club (Verified)",
-                    date: "Nov 12, 2025",
-                    time: "14:00 IST",
-                    venue: "Main Auditorium",
-                    eligibility: "Open to all branches",
-                    ai_summary: "A high-level competition focused on autonomous drones."
-                };
-
-                result.innerHTML = `<pre class="text-xs text-green-400">` + JSON.stringify(mockData, null, 2) + `</pre>
-                <button class="mt-4 w-full bg-green-600 text-white py-2 rounded-lg text-xs font-sans">Publish to Official Feed</button>`;
-            }, 2500);
-        }
-
-        // FUNCTIONAL: CALENDAR SYNC SIMULATION
-        function syncToCalendar(btn) {
-            btn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> Synced to Google`;
-            btn.classList.remove('border-blue-600', 'text-blue-600');
-            btn.classList.add('bg-green-600', 'text-white', 'border-green-600');
-            lucide.createIcons();
-        }
-
-        // FUNCTIONAL: AI CHAT
-        function toggleChat() {
-            document.getElementById('ai-chat').classList.toggle('hidden');
-        }
-
-        function handleChat(e) {
-            if (e.key === 'Enter') {
-                const input = document.getElementById('chat-input');
-                const messages = document.getElementById('chat-messages');
-                
-                if(!input.value) return;
-
-                // User message
-                messages.innerHTML += `<div class="bg-blue-600 text-white p-3 rounded-tl-xl rounded-br-xl ml-8">${input.value}</div>`;
-                
-                const query = input.value.toLowerCase();
-                input.value = '';
-
-                // Simulate AI Thinking
-                setTimeout(() => {
-                    let response = "I'm not sure about that. Try asking about events or attendance!";
-                    if(query.includes('hackathon')) response = "There's a <b>Hackathon</b> next week on Friday. I've highlighted it in your feed!";
-                    if(query.includes('attendance')) response = "Your attendance is <b>72%</b>. You need to attend 3 more classes to reach the safe zone.";
-
-                    messages.innerHTML += `<div class="bg-gray-100 p-3 rounded-tr-xl rounded-bl-xl mr-8 border border-blue-100">${response}</div>`;
-                    messages.scrollTop = messages.scrollHeight;
-                }, 1000);
-            }
-        }
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
